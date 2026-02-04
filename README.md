@@ -1,15 +1,41 @@
 # OpsMedic
 
-OpsMedic is an autonomous SRE agent designed to prevent service outages by detecting and remediating infrastructure degradation before it leads to a crash. It embodies a true "Perceive-Reason-Act" loop.
+OpsMedic is an autonomous Site Reliability Engineering (SRE) agent designed to proactively prevent service outages by detecting and remediating infrastructure degradation before it leads to a crash. It operates on a "Perceive-Reason-Act" loop, ensuring high availability and reliability of services.
 
-## Features
+---
 
-- **Perceive:** Observes and detects degradation using OpenTelemetry for metrics, traces, and logs.
-- **Reason:** Diagnoses issues using an AI-powered Large Language Model (LLM) to identify root causes and recommend actions.
-- **Act:** Executes intelligent remediation actions such as restarting containers, scaling out, or rolling back.
-- **Dashboard:** A Streamlit-based dashboard to visualize incidents and container status in real-time.
+## 🌟 Key Features
 
-## Project Structure
+### 1. Perceive (Observe & Detect Degradation)
+- **Mechanism:** Utilizes OpenTelemetry for comprehensive application health monitoring, including metrics, traces, and logs.
+- **Trigger:** Detects Service Level Objective (SLO) breaches or anomalies, such as:
+  - Memory utilization > 90% for 120 seconds.
+  - P99 latency > 1.5 seconds for 60 seconds.
+- **Output:** Provides rich, correlated observability data for further analysis.
+
+### 2. Reason (AI-Powered Diagnosis)
+- **Mechanism:** Leverages a Large Language Model (LLM) to act as a virtual Senior SRE.
+- **Input:** Structured payload containing detailed OpenTelemetry context, including metric trends, trace IDs, correlated log snippets, and SLO details.
+- **Output:** A structured JSON response with:
+  - Root cause analysis.
+  - Recommended remediation actions (e.g., RESTART, SCALE_OUT, ROLLBACK).
+
+### 3. Act (Intelligent Remediation)
+- **Mechanism:** Executes recommended actions automatically.
+- **Actions:**
+  - **RESTART:** Restarts affected Docker containers.
+  - **SCALE_OUT:** Scales out services to handle increased load (future feature).
+  - **ROLLBACK:** Reverts to a stable version (future feature).
+- **Target:** Docker containers (current MVP) with plans to integrate Kubernetes API in future phases.
+
+### 4. Dashboard
+- **Streamlit-based Dashboard:**
+  - Visualizes incidents and container status in real-time.
+  - Displays live updates of the incident lifecycle.
+
+---
+
+## 🏗️ Project Structure
 
 ```
 OpsMedic/
@@ -21,43 +47,93 @@ OpsMedic/
 └── otel-collector-config.yaml # OpenTelemetry Collector configuration
 ```
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Docker and Docker Compose installed
-- Python 3.10+
+- Docker and Docker Compose installed.
+- Python 3.10+ installed.
 
-### Setup
+### Setup Instructions
 
-1. Clone the repository:
+1. **Clone the Repository:**
    ```bash
    git clone <repository-url>
    cd OpsMedic
    ```
 
-2. Build and start the services:
+2. **Build and Start the Services:**
    ```bash
    docker-compose up --build
    ```
 
-3. Access the Streamlit dashboard at `http://localhost:8501`.
+3. **Access the Dashboard:**
+   Open your browser and navigate to:
+   ```
+   http://localhost:8501
+   ```
 
-### Testing
+4. **Run Integration Tests:**
+   To ensure everything is working as expected, run:
+   ```bash
+   pytest opsmedic_agent/tests/
+   ```
 
-Run the integration tests:
-```bash
-pytest opsmedic_agent/tests/
-```
+---
 
-## Contributing
+## 📚 Documentation
+
+All project documentation, including progress reports, demo scripts, and integration testing instructions, can be found in the `docs/` folder. Note that this folder is excluded from the GitHub repository.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions to improve OpsMedic! To contribute:
 
 1. Fork the repository.
-2. Create a new branch for your feature (`git checkout -b feature-name`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature-name`).
+2. Create a new branch for your feature:
+   ```bash
+   git checkout -b feature-name
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m 'Add some feature'
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature-name
+   ```
 5. Open a pull request.
 
-## License
+---
 
-This project is licensed under the MIT License.
+## 📜 License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+## 🛠️ Future Enhancements
+
+- **Kubernetes Integration:** Extend remediation capabilities to Kubernetes clusters.
+- **Advanced AI Diagnosis:** Incorporate more advanced LLMs for better root cause analysis.
+- **Additional Remediation Actions:** Add support for scaling out and rolling back services.
+- **Enhanced Dashboard Features:**
+  - Historical data visualization.
+  - Customizable SLO thresholds.
+  - User authentication and role-based access control.
+
+---
+
+## 🌐 Contact
+
+For any inquiries or support, please contact the OpsMedic team at:
+- **Email:** support@opsmedic.com
+- **Website:** [OpsMedic Official Website](https://opsmedic.com)
+
+---
+
+Thank you for using OpsMedic! Together, let's make infrastructure more reliable and resilient.
