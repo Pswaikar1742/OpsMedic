@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  buggy-app-v2:
+    build:
+      context: ./opsmedic_project/buggy_app_v2
+    ports:
+      - "5000:5000"
+    networks:
+      - opsmedic_net
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./opsmedic_project/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "55681:55681" # OTLP HTTP
+    networks:
+      - opsmedic_net
+
+  opsmedic-agent:
+    build:
+      context: ./opsmedic_project/opsmedic_agent
+    ports:
+      - "8000:8000"
+    networks:
+      - opsmedic_net
+
+  opsmedic-dashboard:
+    build:
+      context: ./opsmedic_project/opsmedic_dashboard
+    ports:
+      - "8501:8501"
+    networks:
+      - opsmedic_net
+
+networks:
+  opsmedic_net:
+    driver: bridge

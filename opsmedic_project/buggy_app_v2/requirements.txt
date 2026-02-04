@@ -1,0 +1,7 @@
+flask
+gunicorn
+opentelemetry-sdk
+opentelemetry-api
+opentelemetry-exporter-otlp
+opentelemetry-instrumentation-flask
+opentelemetry-distro

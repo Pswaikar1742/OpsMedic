@@ -1,0 +1,63 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+    timeout: 5s
+  metricstransform:
+    transforms:
+      - include: "container_memory_usage_bytes"
+        match_type: strict
+        action: update
+        operations:
+          - action: add_label
+            new_label: "slo_breach"
+            new_value: "memory_utilization_90_percent_for_120s"
+  filter:
+    metrics:
+      include:
+        match_type: strict
+        metric_names: ["container_memory_usage_bytes"]
+      datapoint_attributes:
+        - key: "slo_breach"
+          value: "memory_utilization_90_percent_for_120s"
+
+exporters:
+  logging:
+    loglevel: debug
+  otlphttp:
+    endpoint: "http://opsmedic-agent:8000/webhook"
+    headers:
+      Content-Type: application/json
+    template: |
+      {
+        "incident_id": "{{uuid}}",
+        "timestamp": "{{timestamp}}",
+        "breached_slo": "{{attributes.slo_breach}}",
+        "container_info": {
+          "id": "{{attributes.container_id}}",
+          "name": "{{attributes.container_name}}",
+          "image": "{{attributes.container_image}}"
+        },
+        "observability_context": {
+          "metrics_snapshot": "{{metric_value}}",
+          "trace_ids": ["{{trace_id}}"],
+          "correlated_logs": "{{logs}}"
+        }
+      }
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging, otlphttp]
+    metrics:
+      receivers: [otlp]
+      processors: [metricstransform, batch, filter]
+      exporters: [logging, otlphttp]
+    logs:
+      receivers: [otlp]
+      exporters: [logging, otlphttp]
