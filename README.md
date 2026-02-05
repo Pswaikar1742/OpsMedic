@@ -60,7 +60,7 @@ OpsMedic/
 
 1. **Clone the Repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Pswaikar1742/OpsMedic.git
    cd OpsMedic
    ```
 
@@ -125,15 +125,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
   - Historical data visualization.
   - Customizable SLO thresholds.
   - User authentication and role-based access control.
-
----
-
-## 🌐 Contact
-
-For any inquiries or support, please contact the OpsMedic team at:
-- **Email:** support@opsmedic.com
-- **Website:** [OpsMedic Official Website](https://opsmedic.com)
-
 ---
 
 Thank you for using OpsMedic! Together, let's make infrastructure more reliable and resilient.
