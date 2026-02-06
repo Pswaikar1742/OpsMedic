@@ -55,6 +55,29 @@ OpsMedic/
 
 - Docker and Docker Compose installed.
 - Python 3.10+ installed.
+- An LLM API key (choose at least one):
+  - **Google Gemini:** Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
+  - **FastRouter:** Get your API key from [FastRouter](https://www.fastrouter.ai/).
+  - **Llama (Self-hosted):** A running Llama endpoint and API key.
+
+### API Key Configuration
+
+1. **Copy the example environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit `.env` and add your API keys:**
+   ```bash
+   # .env file
+   ACTIVE_LLM_PROVIDER=gemini  # or 'fastrouter' or 'llama'
+   GEMINI_API_KEY=your_gemini_key_here
+   FASTRTR_API_KEY=your_fastrouter_key_here
+   LLAMA_API_KEY=your_llama_key_here
+   LLAMA_ENDPOINT=http://your-llama-endpoint:port
+   ```
+
+3. **DO NOT commit `.env` to version control!** It's already in `.gitignore`.
 
 ### Setup Instructions
 
@@ -64,21 +87,28 @@ OpsMedic/
    cd OpsMedic
    ```
 
-2. **Build and Start the Services:**
+2. **Set up environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your LLM API keys (see API Key Configuration above)
+   ```
+
+3. **Build and Start the Services:**
    ```bash
    docker-compose up --build
    ```
 
-3. **Access the Dashboard:**
+4. **Access the Dashboard:**
    Open your browser and navigate to:
    ```
    http://localhost:8501
    ```
 
-4. **Run Integration Tests:**
+5. **Run Integration Tests:**
    To ensure everything is working as expected, run:
    ```bash
-   pytest opsmedic_agent/tests/
+   cd opsmedic_project
+   pytest opsmedic_agent/tests/ -v
    ```
 
 ---
