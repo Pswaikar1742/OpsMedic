@@ -2,62 +2,52 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 processors:
   batch:
     timeout: 5s
-  metricstransform:
-    transforms:
-      - include: "container_memory_usage_bytes"
-        match_type: strict
-        action: update
-        operations:
-          - action: add_label
-            new_label: "slo_breach"
-            new_value: "memory_utilization_90_percent_for_120s"
-  filter:
-    metrics:
-      include:
-        match_type: strict
-        metric_names: ["container_memory_usage_bytes"]
-      datapoint_attributes:
-        - key: "slo_breach"
-          value: "memory_utilization_90_percent_for_120s"
+    send_batch_size: 512
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+  attributes:
+    actions:
+      - key: service.name
+        value: opsmedic
+        action: insert
 
 exporters:
   logging:
-    loglevel: debug
+    loglevel: info
+  jaeger:
+    endpoint: http://localhost:14250
   otlphttp:
-    endpoint: "http://opsmedic-agent:8000/webhook"
+    endpoint: http://opsmedic-agent:8001
+    path: /webhook
     headers:
       Content-Type: application/json
-    template: |
-      {
-        "incident_id": "{{uuid}}",
-        "timestamp": "{{timestamp}}",
-        "breached_slo": "{{attributes.slo_breach}}",
-        "container_info": {
-          "id": "{{attributes.container_id}}",
-          "name": "{{attributes.container_name}}",
-          "image": "{{attributes.container_image}}"
-        },
-        "observability_context": {
-          "metrics_snapshot": "{{metric_value}}",
-          "trace_ids": ["{{trace_id}}"],
-          "correlated_logs": "{{logs}}"
-        }
-      }
+
+extensions:
+  health_check:
+    endpoint: :13133
+  pprof:
+    endpoint: :1777
 
 service:
+  extensions: [health_check, pprof]
   pipelines:
     traces:
       receivers: [otlp]
+      processors: [memory_limiter, attributes, batch]
       exporters: [logging, otlphttp]
     metrics:
       receivers: [otlp]
-      processors: [metricstransform, batch, filter]
+      processors: [memory_limiter, attributes, batch]
       exporters: [logging, otlphttp]
     logs:
       receivers: [otlp]
+      processors: [memory_limiter, attributes, batch]
       exporters: [logging, otlphttp]
