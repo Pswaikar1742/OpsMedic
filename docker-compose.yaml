@@ -4,37 +4,81 @@ services:
   buggy-app-v2:
     build:
       context: ./opsmedic_project/buggy_app_v2
+    container_name: buggy-app-v2
     ports:
-      - "5000:5000"
+      - "8000:8000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      CONTAINER_ID: buggy-app-v2-container
+      CONTAINER_NAME: buggy-app-v2
+    depends_on:
+      - otel-collector
     networks:
       - opsmedic_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   otel-collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector:0.88.0
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./opsmedic_project/otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    command: ["--config=/etc/otel-collector-config.yaml"]
     ports:
-      - "4317:4317" # OTLP gRPC
-      - "55681:55681" # OTLP HTTP
+      - "4317:4317"  # OTLP gRPC receiver
+      - "4318:4318"  # OTLP HTTP receiver
+      - "55681:55681" # Prometheus exporter
+      - "13133:13133" # Health check
     networks:
       - opsmedic_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:13133"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   opsmedic-agent:
     build:
       context: ./opsmedic_project/opsmedic_agent
+    container_name: opsmedic-agent
     ports:
-      - "8000:8000"
+      - "8001:8001"
+    environment:
+      ACTIVE_LLM_PROVIDER: ${ACTIVE_LLM_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      FASTRTR_API_KEY: ${FASTRTR_API_KEY}
+      LLAMA_API_KEY: ${LLAMA_API_KEY}
+      LLAMA_ENDPOINT: ${LLAMA_ENDPOINT}
+    depends_on:
+      - otel-collector
     networks:
       - opsmedic_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/incidents"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   opsmedic-dashboard:
     build:
       context: ./opsmedic_project/opsmedic_dashboard
+    container_name: opsmedic-dashboard
     ports:
       - "8501:8501"
+    environment:
+      AGENT_URL: http://opsmedic-agent:8001
+    depends_on:
+      - opsmedic-agent
     networks:
       - opsmedic_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   opsmedic_net:
