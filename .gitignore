@@ -1,0 +1,5 @@
+.env
+opsmedic_project/docs/
+__pycache__/
+*.pyc
+.env.local
